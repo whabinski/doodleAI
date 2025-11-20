@@ -39,6 +39,8 @@ export default function Home() {
       marginTop: "2rem"
     }}>
       <h1>DoodleAI</h1>
+      <h1 className="text-4xl font-bold text-red-500">DoodleAI</h1>
+
 
       <DrawingCanvas ref={canvasRef} />
 
