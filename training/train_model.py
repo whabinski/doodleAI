@@ -20,7 +20,7 @@ def load_quickdraw_class(label):
     with open(path, "r") as f:
         for line in f:
             sample = json.loads(line)
-            if len(X) > 5000:  # lightweight subset
+            if len(X) > 20000:
                 break
             img = sample_to_image(sample["drawing"])
             X.append(img)
@@ -65,18 +65,29 @@ def draw_line(img, x0, y0, x1, y1):
 # Build model
 # =============================
 model = models.Sequential([
-    layers.Conv2D(32, (3,3), activation="relu", input_shape=(28,28,1)),
-    layers.MaxPooling2D((2,2)),
-    layers.Conv2D(64, (3,3), activation="relu"),
-    layers.MaxPooling2D((2,2)),
-    layers.Flatten(),
+    layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1)),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D((2, 2)),
+
+    layers.Conv2D(64, (3, 3), activation="relu"),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D((2, 2)),
+
+    layers.Conv2D(128, (3, 3), activation="relu"),
+    layers.BatchNormalization(),
+    layers.GlobalAveragePooling2D(),
+
+    layers.Dropout(0.4),
     layers.Dense(128, activation="relu"),
-    layers.Dense(len(CLASSES), activation="softmax")
+    layers.Dropout(0.3),
+    layers.Dense(len(CLASSES), activation="softmax"),
 ])
 
-model.compile(optimizer="adam",
-              loss="sparse_categorical_crossentropy",
-              metrics=["accuracy"])
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"],
+)
 
 # =============================
 # Load dataset
@@ -96,7 +107,24 @@ print("Final dataset size:", X.shape, y.shape)
 # =============================
 # Train
 # =============================
-model.fit(X, y, batch_size=64, epochs=5, validation_split=0.1)
+callbacks = [
+    tf.keras.callbacks.EarlyStopping(
+        monitor="val_accuracy",
+        patience=3,
+        restore_best_weights=True
+    )
+]
+
+history = model.fit(
+    X, y,
+    batch_size=128,        # bigger batch for speed
+    epochs=30,             # let ES stop us early
+    validation_split=0.1,
+    shuffle=True,
+    callbacks=callbacks,
+)
+
+
 
 # =============================
 # Save Keras model (for backup / future use)

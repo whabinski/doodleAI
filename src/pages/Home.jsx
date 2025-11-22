@@ -3,6 +3,7 @@ import * as tf from "@tensorflow/tfjs";
 import DrawingCanvas from "../components/DrawingCanvas";
 import CanvasControls from "../components/CanvasControls";
 import PredictionPanel from "../components/PredictionPanel";
+import useCanvasProcessing from "../hooks/useCanvasProcessing";
 
 // Order MUST match the order used during training
 const CLASS_NAMES = [
@@ -19,6 +20,7 @@ const CLASS_NAMES = [
 
 export default function Home() {
   const canvasRef = useRef(null);
+  const { preprocessImage } = useCanvasProcessing();
 
   const [prediction, setPrediction] = useState(null);
   const [model, setModel] = useState(null);
@@ -66,7 +68,6 @@ export default function Home() {
       console.warn("Model not ready yet");
       return;
     }
-
     if (!canvasRef.current) return;
 
     setIsPredicting(true);
@@ -74,14 +75,19 @@ export default function Home() {
       // 1) Export canvas image
       const dataUrl = await canvasRef.current.exportImage("png");
 
-      // 2) Convert to [1, 28, 28, 1] tensor
-      const inputTensor = await dataUrlToInputTensor(dataUrl);
+      // 2) Preprocess into [28, 28, 1] (inverted, normalized) via hook
+      const imgTensor = await preprocessImage(dataUrl); // [28, 28, 1]
 
-      // 3) Run prediction
+      // 3) Add batch dimension -> [1, 28, 28, 1]
+      const inputTensor = imgTensor.expandDims(0);
+
+      // 4) Run prediction
       const logits = model.predict(inputTensor);
       const probs = await logits.data();
+     
+      console.log("probs:", Array.from(probs));
 
-      // Find top class
+      // 5) Find top class
       let bestIdx = 0;
       for (let i = 1; i < probs.length; i++) {
         if (probs[i] > probs[bestIdx]) bestIdx = i;
@@ -93,6 +99,7 @@ export default function Home() {
         raw: probs,
       });
 
+      imgTensor.dispose();
       inputTensor.dispose();
       logits.dispose();
     } catch (err) {
@@ -139,45 +146,4 @@ export default function Home() {
       </div>
     </div>
   );
-}
-
-/**
- * Convert a canvas PNG data URL to a Tensor of shape [1, 28, 28, 1]
- * with values in [0, 1], where strokes are bright (near 1) and background near 0.
- */
-async function dataUrlToInputTensor(dataUrl) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = dataUrl;
-    img.onload = () => {
-      const off = document.createElement("canvas");
-      off.width = 28;
-      off.height = 28;
-      const ctx = off.getContext("2d");
-
-      // White background so we don't get transparent pixels
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, 28, 28);
-
-      // Draw the user doodle scaled into 28x28
-      ctx.drawImage(img, 0, 0, 28, 28);
-
-      const imageData = ctx.getImageData(0, 0, 28, 28);
-      const { data } = imageData; // RGBA
-      const gray = new Float32Array(28 * 28);
-
-      // Convert to grayscale and invert so strokes ≈ 1, background ≈ 0
-      for (let i = 0, j = 0; i < data.length; i += 4, j++) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const v = (r + g + b) / 3; // 0..255
-        gray[j] = (255 - v) / 255; // invert + normalize
-      }
-
-      const tensor = tf.tensor4d(gray, [1, 28, 28, 1]);
-      resolve(tensor);
-    };
-    img.onerror = reject;
-  });
 }
