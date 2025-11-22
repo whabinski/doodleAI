@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+training/venv/
+training/dataset/
+training/tfjs_model/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# (Optional) ignore browser model artifacts instead of committing them
+# public/tfjs_model/
