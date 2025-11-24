@@ -1,5 +1,5 @@
 // src/components/layout/GameBoard.jsx
-import DrawingCanvas from "../DrawingCanvas";
+import DrawingCanvas from "./DrawingCanvas";
 
 export default function GameBoard({ canvasRef }) {
   return (

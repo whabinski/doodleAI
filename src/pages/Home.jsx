@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from "react";
 import * as tf from "@tensorflow/tfjs";
 import useCanvasProcessing from "../hooks/useCanvasProcessing";
-import GameHeader from "../components/layout/GameHeader";
-import GameFooter from "../components/layout/GameFooter";
-import GameBoard from "../components/layout/GameBoard";
+import GameHeader from "../components/GameHeader";
+import GameFooter from "../components/GameFooter";
+import GameBoard from "../components/GameBoard";
 
 // Order MUST match the order used during training
 const CLASS_NAMES = [
