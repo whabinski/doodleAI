@@ -1,1 +1,64 @@
 @import "tailwindcss";
+
+/* iOS safe-area variables (fallback 0px so desktop is fine) */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Fill viewport */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* No scroll anywhere */
+body {
+  overflow: hidden;
+}
+
+/* Safe padding helpers */
+.pt-safe {
+  padding-top: max(0.75rem, var(--safe-top));
+}
+
+.pb-safe {
+  padding-bottom: max(0.75rem, var(--safe-bottom));
+}
+
+/* ---- SCALE THE WHOLE GAME ON SHORT SCREENS ---- */
+
+.game-root-inner {
+  height: 100%;              /* fill outer container */
+  transform-origin: top center;
+}
+
+/* Slight shrink on medium-short heights */
+@media (max-height: 860px) {
+  .game-root-inner {
+    transform: scale(0.95);
+  }
+}
+
+/* More shrink on smaller phones */
+@media (max-height: 780px) {
+  .game-root-inner {
+    transform: scale(0.9);
+  }
+}
+
+/* Very small heights */
+@media (max-height: 700px) {
+  .game-root-inner {
+    transform: scale(0.85);
+  }
+}
+
+@media (max-height: 640px) {
+  .game-root-inner {
+    transform: scale(0.8);
+  }
+}

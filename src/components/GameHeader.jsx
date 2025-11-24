@@ -7,7 +7,7 @@ export default function GameHeader({
   onStartNewRound,
 }) {
   return (
-    <header className="w-full border-b border-slate-800 bg-slate-950/80 px-4 sm:px-8 py-4">
+    <header className="pt-safe w-full border-b border-slate-800 bg-slate-950/80 px-4 sm:px-8 py-4">
       <div className="relative flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between">
         {/* Title (left) */}
         <div className="min-w-[140px] flex flex-col items-center md:items-start">

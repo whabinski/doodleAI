@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useRef as useRefHook } from "react";
 import * as tf from "@tensorflow/tfjs";
 import useCanvasProcessing from "../hooks/useCanvasProcessing";
 import GameHeader from "../components/GameHeader";
@@ -33,7 +33,7 @@ export default function Home() {
   const { preprocessImage } = useCanvasProcessing();
 
   // Bag of prompts for the current “cycle”
-  const promptBagRef = useRef([]);
+  const promptBagRef = useRefHook([]);
 
   const [prediction, setPrediction] = useState(null);
   const [model, setModel] = useState(null);
@@ -189,7 +189,17 @@ export default function Home() {
   const predictDisabled = modelStatus !== "ready" || isPredicting;
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col">
+    <div
+      className="
+        h-[100dvh] w-full
+        bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950
+        text-slate-100
+        flex flex-col
+        overflow-hidden
+        pt-safe pb-safe
+      "
+    >
+      {/* Header: full-width bar at the top */}
       <GameHeader
         score={score}
         targetClass={targetClass}
@@ -198,20 +208,22 @@ export default function Home() {
         onStartNewRound={startNewRound}
       />
 
-      <main className="flex-1 w-full flex items-center justify-center px-2 sm:px-4 pb-4 sm:pb-8">
-        <div className="w-full max-w-5xl bg-slate-900/70 border border-slate-800/80 rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col">
+      {/* Main area: takes remaining space; board is centered, scaled via .game-root-inner */}
+      <main className="flex-1 min-h-0 w-full flex items-center justify-center px-2 sm:px-4">
+        <div className="game-root-inner w-full max-w-5xl flex flex-col items-center">
           <GameBoard canvasRef={canvasRef} />
-
-          <GameFooter
-            aiGuessText={aiGuessText}
-            isPredicting={isPredicting}
-            onUndo={handleUndo}
-            onClear={handleClear}
-            onPredict={handlePredict}
-            predictDisabled={predictDisabled}
-          />
         </div>
       </main>
+
+      {/* Footer: full-width, naturally pinned to bottom by flex-1 main above */}
+      <GameFooter
+        aiGuessText={aiGuessText}
+        isPredicting={isPredicting}
+        onUndo={handleUndo}
+        onClear={handleClear}
+        onPredict={handlePredict}
+        predictDisabled={predictDisabled}
+      />
     </div>
   );
 }

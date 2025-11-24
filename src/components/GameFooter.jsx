@@ -8,7 +8,7 @@ export default function GameFooter({
   predictDisabled,
 }) {
   return (
-    <div className="px-6 pb-5 pt-3 border-t border-slate-800">
+    <div className="mt-auto px-6 pb-5 pt-3 border-t border-slate-800">
       {/* Desktop / tablet: Undo | AI | Clear in a row */}
       <div className="hidden sm:flex items-center justify-between">
         {/* Undo (left) */}
