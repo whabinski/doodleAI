@@ -1,4 +1,4 @@
-// src/components/layout/GameHeader.jsx
+// src/components/GameHeader.jsx
 export default function GameHeader({
   score,
   targetClass,
@@ -7,18 +7,25 @@ export default function GameHeader({
   onStartNewRound,
 }) {
   return (
-    <header className="w-full px-8 py-4 border-b border-slate-800 bg-slate-950/80 flex items-center gap-4">
-      {/* Title (left) */}
-      <div className="min-w-[140px]">
+    <header
+      className="
+        w-full px-4 sm:px-8 py-4 border-b border-slate-800 bg-slate-950/80
+        flex flex-col items-center gap-3 text-center
+        sm:flex-row sm:items-center sm:gap-4 sm:text-left
+      "
+    >
+      {/* Title (left on desktop, centered on mobile) */}
+      <div className="sm:min-w-[140px] flex flex-col items-center sm:items-start">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
           Doodle<span className="text-blue-400">AI</span>
         </h1>
-        <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
+        {/* Hidden on mobile, shown on sm+ */}
+        <p className="hidden sm:block text-[11px] sm:text-xs text-slate-500 mt-1">
           Is your drawing good enough for the AI to guess?
         </p>
       </div>
 
-      {/* Prompt + button (center, horizontal) */}
+      {/* Prompt + button (center, horizontal on all sizes) */}
       <div className="flex-1 flex items-center justify-center">
         {targetClass ? (
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -56,13 +63,11 @@ export default function GameHeader({
         )}
       </div>
 
-      {/* Score (right) – round removed */}
-      <div className="min-w-[130px] flex flex-col items-end text-xs sm:text-sm gap-1">
-        <div className="flex items-center gap-3">
-          <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/40 text-blue-200">
-            Score: <span className="font-semibold">{score}</span>
-          </span>
-        </div>
+      {/* Score (right on desktop, centered on mobile) */}
+      <div className="sm:min-w-[130px] flex justify-center sm:justify-end">
+        <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/40 text-blue-200 text-xs sm:text-sm">
+          Score: <span className="font-semibold">{score}</span>
+        </span>
       </div>
     </header>
   );

@@ -190,7 +190,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col">
-      {/* Header */}
       <GameHeader
         score={score}
         targetClass={targetClass}
@@ -199,12 +198,10 @@ export default function Home() {
         onStartNewRound={startNewRound}
       />
 
-      {/* Middle: big board with centered canvas */}
-      <main className="flex-1 w-full flex items-center justify-center px-4 pb-8">
+      <main className="flex-1 w-full flex items-center justify-center px-2 sm:px-4 pb-4 sm:pb-8">
         <div className="w-full max-w-5xl bg-slate-900/70 border border-slate-800/80 rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col">
           <GameBoard canvasRef={canvasRef} />
 
-          {/* Footer */}
           <GameFooter
             aiGuessText={aiGuessText}
             isPredicting={isPredicting}
