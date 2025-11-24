@@ -45,6 +45,9 @@ export default function Home() {
   const [score, setScore] = useState(0);
   const [lastResult, setLastResult] = useState(null);
 
+  // NEW: dynamic canvas size (CSS pixels for the square container)
+  const [canvasSize, setCanvasSize] = useState(0);
+
   // Load the TF.js model once
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +71,33 @@ export default function Home() {
     loadModel();
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  // NEW: compute square size = min(available width, available height)
+  useEffect(() => {
+    function computeCanvasSize() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      // Approximate header + footer + spacing
+      const reservedVertical = vh < 768 ? 260 : 220;
+
+      const availableHeight = Math.max(140, vh - reservedVertical);
+      const availableWidth = Math.max(140, vw - 40); // side padding
+
+      let base = Math.min(availableWidth, availableHeight);
+      const size = Math.max(220, Math.min(base, 600)); // clamp
+
+      setCanvasSize(size);
+    }
+
+    computeCanvasSize();
+    window.addEventListener("resize", computeCanvasSize);
+    window.addEventListener("orientationchange", computeCanvasSize);
+    return () => {
+      window.removeEventListener("resize", computeCanvasSize);
+      window.removeEventListener("orientationchange", computeCanvasSize);
     };
   }, []);
 
@@ -199,7 +229,7 @@ export default function Home() {
         pt-safe pb-safe
       "
     >
-      {/* Header: full-width bar at the top */}
+      {/* Header: full-width bar at the top (unchanged UI) */}
       <GameHeader
         score={score}
         targetClass={targetClass}
@@ -208,14 +238,14 @@ export default function Home() {
         onStartNewRound={startNewRound}
       />
 
-      {/* Main area: takes remaining space; board is centered, scaled via .game-root-inner */}
+      {/* Main area: takes remaining space; board centered, scaled via .game-root-inner */}
       <main className="flex-1 min-h-0 w-full flex items-center justify-center px-2 sm:px-4">
         <div className="game-root-inner w-full max-w-5xl flex flex-col items-center">
-          <GameBoard canvasRef={canvasRef} />
+          <GameBoard canvasRef={canvasRef} canvasSize={canvasSize} />
         </div>
       </main>
 
-      {/* Footer: full-width, naturally pinned to bottom by flex-1 main above */}
+      {/* Footer: full-width, pinned to bottom by flex layout (unchanged UI) */}
       <GameFooter
         aiGuessText={aiGuessText}
         isPredicting={isPredicting}

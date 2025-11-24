@@ -1,12 +1,26 @@
 // src/components/GameBoard.jsx
 import DrawingCanvas from "./DrawingCanvas";
 
-export default function GameBoard({ canvasRef }) {
+export default function GameBoard({ canvasRef, canvasSize }) {
+  // If we haven't computed size yet, don't render an odd layout
+  if (!canvasSize) {
+    return null;
+  }
+
   return (
-    <section className="flex-1 min-h-0 flex items-center justify-center px-2 sm:px-4">
-      <div className="w-full max-w-5xl h-full bg-slate-950/70 rounded-2xl border border-slate-800 flex items-center justify-center px-3 sm:px-4 py-3 sm:py-4">
-        {/* This wrapper controls the actual drawing size */}
-        <div className="w-[80vw] max-w-[420px] aspect-square flex items-center justify-center">
+    <section className="flex-1 min-h-0 flex items-center justify-center px-2 pt-3 sm:px-6 sm:pt-6 pb-2 sm:pb-4">
+      {/* Dark frame behind the white canvas */}
+      <div className="w-full max-w-[900px] bg-slate-950/80 rounded-2xl border border-slate-800 flex items-center justify-center px-3 sm:px-4 py-3 sm:py-4">
+        {/* Square container with dynamic size */}
+        <div
+          className="flex items-center justify-center"
+          style={{
+            width: `${canvasSize}px`,
+            height: `${canvasSize}px`,
+            maxWidth: "100%",
+            maxHeight: "100%",
+          }}
+        >
           <DrawingCanvas ref={canvasRef} />
         </div>
       </div>
