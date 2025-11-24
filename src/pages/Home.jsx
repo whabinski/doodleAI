@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from "react";
 import * as tf from "@tensorflow/tfjs";
-import DrawingCanvas from "../components/DrawingCanvas";
-import CanvasControls from "../components/CanvasControls";
-import PredictionPanel from "../components/PredictionPanel";
 import useCanvasProcessing from "../hooks/useCanvasProcessing";
+import GameHeader from "../components/layout/GameHeader";
+import GameFooter from "../components/layout/GameFooter";
+import GameBoard from "../components/layout/GameBoard";
+
 
 // Order MUST match the order used during training
 const CLASS_NAMES = [
@@ -24,8 +25,14 @@ export default function Home() {
 
   const [prediction, setPrediction] = useState(null);
   const [model, setModel] = useState(null);
-  const [modelStatus, setModelStatus] = useState("loading"); // 'loading' | 'ready' | 'error'
+  const [modelStatus, setModelStatus] = useState("loading");
   const [isPredicting, setIsPredicting] = useState(false);
+
+  // Game state
+  const [targetClass, setTargetClass] = useState(null);
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lastResult, setLastResult] = useState(null);
 
   // Load the TF.js model once
   useEffect(() => {
@@ -48,7 +55,6 @@ export default function Home() {
     }
 
     loadModel();
-
     return () => {
       cancelled = true;
     };
@@ -57,10 +63,22 @@ export default function Home() {
   const handleClear = () => {
     canvasRef.current?.clearCanvas();
     setPrediction(null);
+    setLastResult(null);
   };
 
   const handleUndo = () => {
     canvasRef.current?.undo();
+  };
+
+  const startNewRound = () => {
+    if (!model || modelStatus !== "ready") return;
+    const next =
+      CLASS_NAMES[Math.floor(Math.random() * CLASS_NAMES.length)];
+    setTargetClass(next);
+    setRound((r) => r + 1);
+    setLastResult(null);
+    setPrediction(null);
+    canvasRef.current?.clearCanvas();
   };
 
   const handlePredict = async () => {
@@ -68,35 +86,59 @@ export default function Home() {
       console.warn("Model not ready yet");
       return;
     }
+    if (!targetClass) {
+      console.warn("No target prompt yet, starting a new round.");
+      startNewRound();
+      return;
+    }
     if (!canvasRef.current) return;
 
     setIsPredicting(true);
     try {
-      // 1) Export canvas image
       const dataUrl = await canvasRef.current.exportImage("png");
+      const imgTensor = await preprocessImage(dataUrl);
 
-      // 2) Preprocess into [28, 28, 1] (inverted, normalized) via hook
-      const imgTensor = await preprocessImage(dataUrl); // [28, 28, 1]
+      const mean = (await imgTensor.mean().data())[0];
+      if (mean < 0.01) {
+        setLastResult({
+          success: false,
+          target: targetClass,
+          predicted: null,
+          confidence: 0,
+          reason: "no_drawing",
+        });
+        imgTensor.dispose();
+        setIsPredicting(false);
+        return;
+      }
 
-      // 3) Add batch dimension -> [1, 28, 28, 1]
       const inputTensor = imgTensor.expandDims(0);
-
-      // 4) Run prediction
       const logits = model.predict(inputTensor);
       const probs = await logits.data();
-     
-      console.log("probs:", Array.from(probs));
 
-      // 5) Find top class
       let bestIdx = 0;
       for (let i = 1; i < probs.length; i++) {
         if (probs[i] > probs[bestIdx]) bestIdx = i;
       }
+      const predictedLabel = CLASS_NAMES[bestIdx];
+      const confidence = probs[bestIdx];
+
+      const success = predictedLabel === targetClass;
+      if (success) {
+        setScore((s) => s + 1);
+      }
 
       setPrediction({
-        label: CLASS_NAMES[bestIdx],
-        confidence: probs[bestIdx],
+        label: predictedLabel,
+        confidence,
         raw: probs,
+      });
+
+      setLastResult({
+        success,
+        target: targetClass,
+        predicted: predictedLabel,
+        confidence,
       });
 
       imgTensor.dispose();
@@ -109,41 +151,52 @@ export default function Home() {
     }
   };
 
+  const targetLabelPretty = targetClass
+    ? targetClass.charAt(0).toUpperCase() + targetClass.slice(1)
+    : null;
+
+  const aiGuessText = (() => {
+    if (lastResult && lastResult.reason === "no_drawing") {
+      return "I don't see anything yet — try drawing first.";
+    }
+    if (!prediction) {
+      return "Draw something, then let the AI guess!";
+    }
+    return `${prediction.label} (${(prediction.confidence * 100).toFixed(
+      1
+    )}%)`;
+  })();
+
+  const predictDisabled = modelStatus !== "ready" || isPredicting;
+
   return (
-    <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center p-6">
-      <h1 className="text-5xl font-bold text-gray-800 mb-2 tracking-tight">
-        Doodle<span className="text-blue-600">AI</span>
-      </h1>
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col">
+      {/* Header extracted */}
+      <GameHeader
+        round={round}
+        score={score}
+        targetClass={targetClass}
+        targetLabelPretty={targetLabelPretty}
+        modelStatus={modelStatus}
+        onStartNewRound={startNewRound}
+      />
 
-      <p className="text-sm text-gray-500 mb-6">
-        {modelStatus === "loading" && "Loading model…"}
-        {modelStatus === "ready" &&
-          "Model ready – draw a doodle and hit Predict!"}
-        {modelStatus === "error" &&
-          "Error loading model. Check the console for details."}
-      </p>
+      {/* Middle: big board with centered canvas (unchanged) */}
+      <main className="flex-1 w-full flex items-center justify-center px-4 pb-8">
+      <div className="w-full max-w-5xl bg-slate-900/70 border border-slate-800/80 rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col">
+        <GameBoard canvasRef={canvasRef} />
 
-      <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-4xl grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Canvas Section */}
-        <div className="lg:col-span-2 flex flex-col items-center">
-          <div className="w-full flex justify-center mb-4">
-            <DrawingCanvas ref={canvasRef} />
-          </div>
-          <CanvasControls
-            onClear={handleClear}
-            onUndo={handleUndo}
-            onPredict={handlePredict}
-          />
-          {isPredicting && (
-            <p className="mt-2 text-xs text-gray-500">Thinking…</p>
-          )}
-        </div>
-
-        {/* Prediction Section */}
-        <div className="lg:col-span-1">
-          <PredictionPanel prediction={prediction} />
-        </div>
+      {/* Footer extracted */}
+      <GameFooter
+        aiGuessText={aiGuessText}
+        isPredicting={isPredicting}
+        onUndo={handleUndo}
+        onClear={handleClear}
+        onPredict={handlePredict}
+        predictDisabled={predictDisabled}
+      />
       </div>
+      </main>
     </div>
   );
 }
