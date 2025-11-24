@@ -19,9 +19,6 @@ export default function GameFooter({
 
       {/* AI guess + button (center) */}
       <div className="flex flex-col items-center gap-1 text-center">
-        <span className="uppercase tracking-[0.2em] text-[10px] text-slate-500">
-          AI guess
-        </span>
         <p className="text-xs sm:text-sm text-slate-200 min-h-[1.25rem]">
           {aiGuessText}
         </p>

@@ -5,7 +5,6 @@ import GameHeader from "../components/layout/GameHeader";
 import GameFooter from "../components/layout/GameFooter";
 import GameBoard from "../components/layout/GameBoard";
 
-
 // Order MUST match the order used during training
 const CLASS_NAMES = [
   "airplane",
@@ -19,9 +18,22 @@ const CLASS_NAMES = [
   "car",
 ];
 
+// Fisher–Yates shuffle
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function Home() {
   const canvasRef = useRef(null);
   const { preprocessImage } = useCanvasProcessing();
+
+  // Bag of prompts for the current “cycle”
+  const promptBagRef = useRef([]);
 
   const [prediction, setPrediction] = useState(null);
   const [model, setModel] = useState(null);
@@ -30,7 +42,6 @@ export default function Home() {
 
   // Game state
   const [targetClass, setTargetClass] = useState(null);
-  const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [lastResult, setLastResult] = useState(null);
 
@@ -70,12 +81,20 @@ export default function Home() {
     canvasRef.current?.undo();
   };
 
+  // Get the next prompt in a “bag” so each class appears once per cycle
+  const getNextPrompt = () => {
+    if (!promptBagRef.current || promptBagRef.current.length === 0) {
+      // Refill with a shuffled copy of all classes
+      promptBagRef.current = shuffleArray(CLASS_NAMES);
+    }
+    // Take one from the front
+    return promptBagRef.current.shift();
+  };
+
   const startNewRound = () => {
     if (!model || modelStatus !== "ready") return;
-    const next =
-      CLASS_NAMES[Math.floor(Math.random() * CLASS_NAMES.length)];
+    const next = getNextPrompt();
     setTargetClass(next);
-    setRound((r) => r + 1);
     setLastResult(null);
     setPrediction(null);
     canvasRef.current?.clearCanvas();
@@ -171,9 +190,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col">
-      {/* Header extracted */}
+      {/* Header */}
       <GameHeader
-        round={round}
         score={score}
         targetClass={targetClass}
         targetLabelPretty={targetLabelPretty}
@@ -181,21 +199,21 @@ export default function Home() {
         onStartNewRound={startNewRound}
       />
 
-      {/* Middle: big board with centered canvas (unchanged) */}
+      {/* Middle: big board with centered canvas */}
       <main className="flex-1 w-full flex items-center justify-center px-4 pb-8">
-      <div className="w-full max-w-5xl bg-slate-900/70 border border-slate-800/80 rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col">
-        <GameBoard canvasRef={canvasRef} />
+        <div className="w-full max-w-5xl bg-slate-900/70 border border-slate-800/80 rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col">
+          <GameBoard canvasRef={canvasRef} />
 
-      {/* Footer extracted */}
-      <GameFooter
-        aiGuessText={aiGuessText}
-        isPredicting={isPredicting}
-        onUndo={handleUndo}
-        onClear={handleClear}
-        onPredict={handlePredict}
-        predictDisabled={predictDisabled}
-      />
-      </div>
+          {/* Footer */}
+          <GameFooter
+            aiGuessText={aiGuessText}
+            isPredicting={isPredicting}
+            onUndo={handleUndo}
+            onClear={handleClear}
+            onPredict={handlePredict}
+            predictDisabled={predictDisabled}
+          />
+        </div>
       </main>
     </div>
   );
