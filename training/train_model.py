@@ -6,8 +6,20 @@ from tensorflow.keras import layers, models # type: ignore
 from tqdm import tqdm
 
 CLASSES = [
-    "airplane", "bicycle", "cat", "fish", "house",
-    "lightning", "star", "tree", "car"
+    "airplane",
+    "apple",
+    "bicycle",
+    "book",
+    "car",
+    "cat",
+    "crown",
+    "eiffel Tower",
+    "fish",
+    "helicopter",
+    "house",
+    "moustache",
+    "star",
+    "sword",
 ]
 
 # =============================
@@ -123,8 +135,6 @@ history = model.fit(
     shuffle=True,
     callbacks=callbacks,
 )
-
-
 
 # =============================
 # Save Keras model (for backup / future use)

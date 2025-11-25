@@ -2,17 +2,21 @@
 import { useEffect, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
 
-// Single source of truth for class names
 export const CLASS_NAMES = [
   "airplane",
+  "apple",
   "bicycle",
-  "cat",
-  "fish",
-  "house",
-  "lightning",
-  "star",
-  "tree",
+  "book",
   "car",
+  "cat",
+  "crown",
+  "eiffel Tower",
+  "fish",
+  "helicopter",
+  "house",
+  "moustache",
+  "star",
+  "sword",
 ];
 
 export function useModel() {
