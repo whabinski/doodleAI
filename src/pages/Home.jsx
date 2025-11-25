@@ -188,12 +188,12 @@ export default function Home() {
     if (!prediction) {
       return "Draw something, then let the AI guess!";
     }
-    return `${prediction.label} (${(prediction.confidence * 100).toFixed(
-      1
-    )}%)`;
+    return `${prediction.label} (${(prediction.confidence * 100).toFixed(1)}%)`;
   })();
 
-  const predictDisabled = modelStatus !== "ready" || isPredicting;
+  const predictDisabled =
+    modelStatus !== "ready" || isPredicting || !targetClass;
+
 
   return (
     <div
