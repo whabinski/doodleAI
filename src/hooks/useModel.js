@@ -1,39 +1,60 @@
+// src/hooks/useModel.js
 import { useEffect, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
 
+// Single source of truth for class names
 export const CLASS_NAMES = [
-  "airplane", "bicycle", "cat", "fish", "house",
-  "lightning", "star", "tree", "car",
+  "airplane",
+  "bicycle",
+  "cat",
+  "fish",
+  "house",
+  "lightning",
+  "star",
+  "tree",
+  "car",
 ];
 
 export function useModel() {
   const [model, setModel] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // "loading" | "ready" | "error"
+  const [status, setStatus] = useState("loading");
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
+    async function load() {
       try {
-        const m = await tf.loadLayersModel("/tfjs_model/model.json");
+        setStatus("loading");
+
+        // Works in dev (/) and on GitHub Pages (/doodleai/)
+        const base = import.meta.env.BASE_URL || "/";
+        const modelUrl = `${base}tfjs_model/model.json`;
+
+        console.log("Loading TFJS model from:", modelUrl);
+        const m = await tf.loadLayersModel(modelUrl);
+
         if (!cancelled) {
           setModel(m);
-          setLoading(false);
+          setStatus("ready");
+          setError(null);
         }
       } catch (err) {
-        console.error("Failed to load model", err);
+        console.error("Failed to load TFJS model", err);
         if (!cancelled) {
           setError(err);
-          setLoading(false);
+          setStatus("error");
         }
       }
-    })();
+    }
+
+    load();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  return { model, loading, error };
+  return { model, status, error };
 }

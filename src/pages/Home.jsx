@@ -1,32 +1,10 @@
+// src/pages/Home.jsx
 import { useRef, useState, useEffect, useRef as useRefHook } from "react";
-import * as tf from "@tensorflow/tfjs";
 import useCanvasProcessing from "../hooks/useCanvasProcessing";
 import GameHeader from "../components/GameHeader";
 import GameFooter from "../components/GameFooter";
 import GameBoard from "../components/GameBoard";
-
-// Order MUST match the order used during training
-const CLASS_NAMES = [
-  "airplane",
-  "bicycle",
-  "cat",
-  "fish",
-  "house",
-  "lightning",
-  "star",
-  "tree",
-  "car",
-];
-
-// Fisher–Yates shuffle
-function shuffleArray(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
+import { useModel, CLASS_NAMES } from "../hooks/useModel";
 
 export default function Home() {
   const canvasRef = useRef(null);
@@ -36,8 +14,6 @@ export default function Home() {
   const promptBagRef = useRefHook([]);
 
   const [prediction, setPrediction] = useState(null);
-  const [model, setModel] = useState(null);
-  const [modelStatus, setModelStatus] = useState("loading");
   const [isPredicting, setIsPredicting] = useState(false);
 
   // Game state
@@ -48,37 +24,8 @@ export default function Home() {
   // Dynamic canvas size (CSS pixels for the square container)
   const [canvasSize, setCanvasSize] = useState(0);
 
-  // --- Load the TF.js model once ---
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadModel() {
-      try {
-        // IMPORTANT: model folder must be in /public/tfjs_model
-        const base = import.meta.env.BASE_URL || "/";
-        const modelUrl = `${base}tfjs_model/model.json`;
-
-        console.log("Loading TFJS model from:", modelUrl);
-        const m = await tf.loadLayersModel(modelUrl);
-
-        if (!cancelled) {
-          setModel(m);
-          setModelStatus("ready");
-          console.log("TFJS model loaded");
-        }
-      } catch (err) {
-        console.error("Failed to load TFJS model:", err);
-        if (!cancelled) {
-          setModelStatus("error");
-        }
-      }
-    }
-
-    loadModel();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // ---- Use shared model hook ----
+  const { model, status: modelStatus } = useModel();
 
   // --- Compute square canvas size from viewport ---
   useEffect(() => {
@@ -117,6 +64,17 @@ export default function Home() {
     canvasRef.current?.undo();
   };
 
+
+  // Fisher–Yates shuffle (keep at bottom or above Home)
+  function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
   // Get the next prompt in a “bag” so each class appears once per cycle
   const getNextPrompt = () => {
     if (!promptBagRef.current || promptBagRef.current.length === 0) {
@@ -153,6 +111,7 @@ export default function Home() {
       const dataUrl = await canvasRef.current.exportImage("png");
       const imgTensor = await preprocessImage(dataUrl);
 
+      // Empty check – if almost all background, tell user to draw
       const mean = (await imgTensor.mean().data())[0];
       if (mean < 0.01) {
         setLastResult({
@@ -167,7 +126,7 @@ export default function Home() {
         return;
       }
 
-      const inputTensor = imgTensor.expandDims(0);
+      const inputTensor = imgTensor.expandDims(0); // [1, 28, 28, 1]
       const logits = model.predict(inputTensor);
       const probs = await logits.data();
 
@@ -235,7 +194,6 @@ export default function Home() {
         pt-safe pb-safe
       "
     >
-      {/* Header: full-width bar at the top */}
       <GameHeader
         score={score}
         targetClass={targetClass}
@@ -244,14 +202,12 @@ export default function Home() {
         onStartNewRound={startNewRound}
       />
 
-      {/* Main area: takes remaining space; board centered */}
       <main className="flex-1 min-h-0 w-full flex items-center justify-center px-2 sm:px-4">
         <div className="game-root-inner w-full max-w-5xl flex flex-col items-center">
           <GameBoard canvasRef={canvasRef} canvasSize={canvasSize} />
         </div>
       </main>
 
-      {/* Footer: full-width, pinned to bottom */}
       <GameFooter
         aiGuessText={aiGuessText}
         isPredicting={isPredicting}
