@@ -45,29 +45,34 @@ export default function Home() {
   const [score, setScore] = useState(0);
   const [lastResult, setLastResult] = useState(null);
 
-  // NEW: dynamic canvas size (CSS pixels for the square container)
+  // Dynamic canvas size (CSS pixels for the square container)
   const [canvasSize, setCanvasSize] = useState(0);
 
-  // Load the TF.js model once
+  // --- Load the TF.js model once ---
   useEffect(() => {
     let cancelled = false;
 
-  async function loadModel() {
-    try {
-      const modelUrl = new URL(
-        "tfjs_model/model.json",
-        import.meta.env.BASE_URL
-      ).href;
+    async function loadModel() {
+      try {
+        // IMPORTANT: model folder must be in /public/tfjs_model
+        const base = import.meta.env.BASE_URL || "/";
+        const modelUrl = `${base}tfjs_model/model.json`;
 
-      const m = await tf.loadLayersModel(modelUrl);
-      setModel(m);
-      setModelStatus("ready");
-      console.log("TFJS model loaded");
-    } catch (err) {
-      console.error("Failed to load TFJS model:", err);
-      setModelStatus("error");
+        console.log("Loading TFJS model from:", modelUrl);
+        const m = await tf.loadLayersModel(modelUrl);
+
+        if (!cancelled) {
+          setModel(m);
+          setModelStatus("ready");
+          console.log("TFJS model loaded");
+        }
+      } catch (err) {
+        console.error("Failed to load TFJS model:", err);
+        if (!cancelled) {
+          setModelStatus("error");
+        }
+      }
     }
-  }
 
     loadModel();
     return () => {
@@ -75,13 +80,13 @@ export default function Home() {
     };
   }, []);
 
-  // NEW: compute square size = min(available width, available height)
+  // --- Compute square canvas size from viewport ---
   useEffect(() => {
     function computeCanvasSize() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      // Approximate header + footer + spacing
+      // Approx header + footer + spacing
       const reservedVertical = vh < 768 ? 260 : 220;
 
       const availableHeight = Math.max(140, vh - reservedVertical);
@@ -230,7 +235,7 @@ export default function Home() {
         pt-safe pb-safe
       "
     >
-      {/* Header: full-width bar at the top (unchanged UI) */}
+      {/* Header: full-width bar at the top */}
       <GameHeader
         score={score}
         targetClass={targetClass}
@@ -239,14 +244,14 @@ export default function Home() {
         onStartNewRound={startNewRound}
       />
 
-      {/* Main area: takes remaining space; board centered, scaled via .game-root-inner */}
+      {/* Main area: takes remaining space; board centered */}
       <main className="flex-1 min-h-0 w-full flex items-center justify-center px-2 sm:px-4">
         <div className="game-root-inner w-full max-w-5xl flex flex-col items-center">
           <GameBoard canvasRef={canvasRef} canvasSize={canvasSize} />
         </div>
       </main>
 
-      {/* Footer: full-width, pinned to bottom by flex layout (unchanged UI) */}
+      {/* Footer: full-width, pinned to bottom */}
       <GameFooter
         aiGuessText={aiGuessText}
         isPredicting={isPredicting}
