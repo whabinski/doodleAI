@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useRef, useState, useEffect, useRef as useRefHook } from "react";
+import { useRef, useState, useEffect } from "react";
 import useCanvasProcessing from "../hooks/useCanvasProcessing";
 import GameHeader from "../components/GameHeader";
 import GameFooter from "../components/GameFooter";
@@ -11,7 +11,7 @@ export default function Home() {
   const { preprocessImage } = useCanvasProcessing();
 
   // Bag of prompts for the current “cycle”
-  const promptBagRef = useRefHook([]);
+  const promptBagRef = useRef([]);
 
   const [prediction, setPrediction] = useState(null);
   const [isPredicting, setIsPredicting] = useState(false);
@@ -21,6 +21,9 @@ export default function Home() {
   const [score, setScore] = useState(0);
   const [lastResult, setLastResult] = useState(null);
 
+  // Stroke Width state for the canvas
+  const [strokeWidth, setStrokeWidth] = useState(12);
+
   // Dynamic canvas size (CSS pixels for the square container)
   const [canvasSize, setCanvasSize] = useState(0);
 
@@ -29,20 +32,28 @@ export default function Home() {
 
   // --- Compute square canvas size from viewport ---
   useEffect(() => {
+    function computeStrokeWidth(size) {
+      const minStroke = 8;   
+      const maxStroke = 16;  
+      const t = (size - 220) / (600 - 220); // 0..1
+      const clamped = Math.max(0, Math.min(1, t));
+      const base = minStroke + (maxStroke - minStroke) * clamped;
+      return Math.round(base);
+    }
+
     function computeCanvasSize() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      // Approx header + footer + spacing
       const reservedVertical = vh < 768 ? 260 : 220;
-
       const availableHeight = Math.max(140, vh - reservedVertical);
-      const availableWidth = Math.max(140, vw - 40); // side padding
+      const availableWidth = Math.max(140, vw - 40);
 
       let base = Math.min(availableWidth, availableHeight);
       const size = Math.max(220, Math.min(base, 600)); // clamp
 
       setCanvasSize(size);
+      setStrokeWidth(computeStrokeWidth(size));  // <-- dynamic stroke
     }
 
     computeCanvasSize();
@@ -53,6 +64,7 @@ export default function Home() {
       window.removeEventListener("orientationchange", computeCanvasSize);
     };
   }, []);
+
 
   const handleClear = () => {
     canvasRef.current?.clearCanvas();
@@ -204,7 +216,7 @@ export default function Home() {
 
       <main className="flex-1 min-h-0 w-full flex items-center justify-center px-2 sm:px-4">
         <div className="game-root-inner w-full max-w-5xl flex flex-col items-center">
-          <GameBoard canvasRef={canvasRef} canvasSize={canvasSize} />
+          <GameBoard canvasRef={canvasRef} canvasSize={canvasSize} strokeWidth={strokeWidth} />
         </div>
       </main>
 

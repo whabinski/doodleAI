@@ -71,7 +71,7 @@ export default function useCanvasProcessing() {
     dst.width = 28;
     dst.height = 28;
     const dstCtx = dst.getContext("2d");
-    dstCtx.imageSmoothingEnabled = false;  // line smoothinig disabled
+    dstCtx.imageSmoothingEnabled = true;  // line smoothing enabled
 
     dstCtx.fillStyle = "white";
     dstCtx.fillRect(0, 0, 28, 28);

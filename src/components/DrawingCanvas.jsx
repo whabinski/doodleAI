@@ -4,16 +4,16 @@ import { forwardRef } from "react";
 
 const CANVAS_SIZE = 256; // logical resolution for the model
 
-const DrawingCanvas = forwardRef((props, ref) => {
+const DrawingCanvas = forwardRef(({ strokeWidth = 12 }, ref) => {
   return (
     <ReactSketchCanvas
       ref={ref}
-      width={CANVAS_SIZE}      // logical resolution
+      width={CANVAS_SIZE}
       height={CANVAS_SIZE}
-      strokeWidth={8}
+      strokeWidth={strokeWidth}       // <-- now dynamic
       strokeColor="black"
       style={{
-        width: "100%",         // fill square from GameBoard
+        width: "100%",
         height: "100%",
         border: "2px solid #0f172a",
         borderRadius: "18px",
