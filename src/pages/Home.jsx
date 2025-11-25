@@ -52,21 +52,22 @@ export default function Home() {
   useEffect(() => {
     let cancelled = false;
 
-    async function loadModel() {
-      try {
-        const m = await tf.loadLayersModel("/tfjs_model/model.json");
-        if (!cancelled) {
-          setModel(m);
-          setModelStatus("ready");
-          console.log("TFJS model loaded");
-        }
-      } catch (err) {
-        console.error("Failed to load TFJS model:", err);
-        if (!cancelled) {
-          setModelStatus("error");
-        }
-      }
+  async function loadModel() {
+    try {
+      const modelUrl = new URL(
+        "tfjs_model/model.json",
+        import.meta.env.BASE_URL
+      ).href;
+
+      const m = await tf.loadLayersModel(modelUrl);
+      setModel(m);
+      setModelStatus("ready");
+      console.log("TFJS model loaded");
+    } catch (err) {
+      console.error("Failed to load TFJS model:", err);
+      setModelStatus("error");
     }
+  }
 
     loadModel();
     return () => {
