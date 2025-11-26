@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 training/venv/
-training/dataset/
+training/dataset_ndjson/
 training/tfjs_model/
 
 # Python caches

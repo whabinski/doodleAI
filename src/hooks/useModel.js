@@ -17,6 +17,7 @@ export const CLASS_NAMES = [
   "moustache",
   "star",
   "sword",
+  "spider",
 ];
 
 export function useModel() {
