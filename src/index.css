@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* iOS safe-area variables (fallback 0px so desktop is fine) */
+/* iOS safe-area variables */
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -29,4 +29,3 @@ body {
   padding-bottom: max(0.75rem, var(--safe-bottom));
 }
 
-/* 🔥 remove ALL .game-root-inner transform rules */

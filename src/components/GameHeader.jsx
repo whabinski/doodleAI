@@ -1,4 +1,18 @@
 // src/components/GameHeader.jsx
+
+/**
+ * GameHeader
+ * ----------
+ * Header UI for the game.
+ *
+ * Props:
+ *  - score: current player score (number)
+ *  - targetClass: internal name of the current target class 
+ *  - targetLabelPretty: human friendly label for the target 
+ *  - modelStatus: "loading" | "ready" | "error" 
+ *  - onStartNewRound: callback to start a new prompt/round
+ *
+ */
 export default function GameHeader({
   score,
   targetClass,
@@ -8,10 +22,13 @@ export default function GameHeader({
 }) {
   return (
     <header className="w-full border-b border-slate-800 bg-slate-950/80">
-      {/* ===== DESKTOP / TABLET (md and up) ===== */}
+      {/* =========================
+          DESKTOP / TABLET (md+)
+          ========================= */}
       <div className="hidden md:block w-full px-8 py-4">
+        {/* Flex row: title (left), score (right), prompt (absolutely centered) */}
         <div className="relative flex items-center">
-          {/* Title (left) */}
+          {/* --- Left: game title + subtitle --- */}
           <div className="min-w-[140px]">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Doodle<span className="text-blue-400">AI</span>
@@ -21,14 +38,14 @@ export default function GameHeader({
             </p>
           </div>
 
-          {/* Score (right) */}
+          {/* --- Right: score pill --- */}
           <div className="ml-auto min-w-[130px] flex justify-end">
             <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/40 text-blue-200 text-xs sm:text-sm">
               Score: <span className="font-semibold">{score}</span>
             </span>
           </div>
 
-          {/* Prompt (perfectly centered in header) */}
+          {/* --- Centered prompt area --- */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
             {targetClass ? (
               <div className="inline-flex flex-wrap items-center justify-center gap-3">
@@ -47,6 +64,7 @@ export default function GameHeader({
                 </button>
               </div>
             ) : (
+              /* Before the first round starts */
               <div className="inline-flex flex-wrap items-center justify-center gap-3">
                 <p className="text-sm sm:text-base text-slate-400">
                   Press{" "}
@@ -68,27 +86,30 @@ export default function GameHeader({
         </div>
       </div>
 
-      {/* ===== MOBILE (below md) ===== */}
+      {/* =========================
+          MOBILE (below md)
+          ========================= */}
       <div className="relative flex md:hidden flex-col items-center px-3 py-3">
-        {/* Score pinned top-right */}
         <div className="absolute right-3 top-2">
           <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/40 text-blue-200 text-[11px]">
             Score: <span className="font-semibold">{score}</span>
           </span>
         </div>
 
-        {/* Title centered */}
+        {/* Centered title on mobile */}
         <h1 className="text-xl font-bold tracking-tight text-center">
           Doodle<span className="text-blue-400">AI</span>
         </h1>
 
+        {/* Tagline hidden on mobile to save vertical space */}
         <p className="hidden text-[11px] text-slate-500 mt-1 text-center">
           Is your drawing good enough for the AI to guess?
         </p>
 
-        {/* Prompt + button under title, centered */}
+        {/* Prompt + action button below the title */}
         <div className="mt-2 flex flex-col items-center gap-1.5">
           {targetClass ? (
+            /* Mobile: active prompt state */
             <div className="flex flex-wrap items-center justify-center gap-2">
               <p className="text-sm text-slate-200 text-center">
                 Prompt:{" "}
@@ -105,6 +126,7 @@ export default function GameHeader({
               </button>
             </div>
           ) : (
+            /* Mobile: pre-game state */
             <div className="flex flex-wrap items-center justify-center gap-2">
               <p className="text-sm text-slate-400 text-center">
                 Press{" "}

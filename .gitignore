@@ -39,6 +39,3 @@ __pycache__/
 .env
 .env.local
 .env.*.local
-
-# (Optional) ignore browser model artifacts instead of committing them
-# public/tfjs_model/
