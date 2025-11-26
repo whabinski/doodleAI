@@ -20,6 +20,12 @@ export const CLASS_NAMES = [
   "spider",
 ];
 
+// Classes that can be used as prompts in the game
+export const PROMPT_NAMES = CLASS_NAMES.filter(
+  (name) => name !== "spider"
+);
+
+
 export function useModel() {
   const [model, setModel] = useState(null);
   // "loading" | "ready" | "error"

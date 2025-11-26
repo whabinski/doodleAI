@@ -4,7 +4,7 @@ import useCanvasProcessing from "../hooks/useCanvasProcessing";
 import GameHeader from "../components/GameHeader";
 import GameFooter from "../components/GameFooter";
 import GameBoard from "../components/GameBoard";
-import { useModel, CLASS_NAMES } from "../hooks/useModel";
+import { useModel, PROMPT_NAMES } from "../hooks/useModel";
 
 export default function Home() {
   const canvasRef = useRef(null);
@@ -91,7 +91,7 @@ export default function Home() {
   const getNextPrompt = () => {
     if (!promptBagRef.current || promptBagRef.current.length === 0) {
       // Refill with a shuffled copy of all classes
-      promptBagRef.current = shuffleArray(CLASS_NAMES);
+      promptBagRef.current = shuffleArray(PROMPT_NAMES);
     }
     // Take one from the front
     return promptBagRef.current.shift();
@@ -146,7 +146,7 @@ export default function Home() {
       for (let i = 1; i < probs.length; i++) {
         if (probs[i] > probs[bestIdx]) bestIdx = i;
       }
-      const predictedLabel = CLASS_NAMES[bestIdx];
+      const predictedLabel = PROMPT_NAMES[bestIdx];
       const confidence = probs[bestIdx];
 
       const success = predictedLabel === targetClass;
