@@ -121,7 +121,7 @@ export default function Home() {
    * Does NOT change the current target prompt or score.
    */
   const handleClear = () => {
-    canvasRef.current?.clearCanvas();
+    canvasRef.current?.resetCanvas();
     setPrediction(null);
     setLastResult(null);
   };
@@ -173,7 +173,7 @@ export default function Home() {
     setTargetClass(next);
     setLastResult(null);
     setPrediction(null);
-    canvasRef.current?.clearCanvas();
+    canvasRef.current?.resetCanvas();
   };
 
   /**
