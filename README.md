@@ -6,6 +6,10 @@ DoodleAI is a browser-based drawing game where you sketch a given prompt and a c
 
 ---
 
+## 🚀 **Demo**
+
+**Live Site:** _https://whabinski.github.io/doodleAI/_  
+
 ## Features
 
 - 🎯 **Prompt-based game loop**  
