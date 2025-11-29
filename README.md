@@ -14,7 +14,7 @@ DoodleAI is a browser-based drawing game where you sketch a given prompt and a c
 
 - 🧠 **On-device AI inference**  
   - A custom CNN trained on QuickDraw `.ndjson` data.  
-  - Converted to a TFJS model and loaded in the browser (`public/tfjs_model`).
+  - Converted to a TFJS model and loaded in the browser.
 
 - 🖌️ **Responsive drawing experience**  
   - Canvas scales with viewport size.  
@@ -74,7 +74,6 @@ DoodleAI is a browser-based drawing game where you sketch a given prompt and a c
   `["airplane", "apple", "bicycle", "book", "car", "cat", "crown", "eiffel Tower", "fish", "helicopter", "house", "moustache", "star", "sword", "spider"]`
 - For each class, up to **70,000** doodles were loaded from the corresponding `.ndjson` file.  
 - Total dataset size after loading: **≈ 1.0–1.05 million** examples across all 15 classes.  
-- Only the simplified line-stroke drawings were used; labels come directly from the file name / class mapping in `train_model_ndjson.py`.
 
 > The raw QuickDraw files are large and are **not committed** to this repository.
 
